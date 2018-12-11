@@ -1,0 +1,39 @@
+{
+    "name": "yuusou/vacation",
+    "type": "roundcube-plugin",
+    "description": "Vacation, out-of-office and forward feature for Roundcube.",
+    "keywords": ["mail","vacation","forward","out of office","roundcube"],
+    "homepage": "https://github.com/yuusou/new-roundcube-vacation-plugin",
+    "license": "GPL-3.0+",
+    "authors": [
+        {
+            "name": "André Oliveira",
+            "homepage": "https://github.com/yuusou",
+            "role": "Author"
+        },
+        {
+            "name": "Roman Plessl",
+            "homepage": "https://github.com/rplessl",
+            "role": "Contributor"
+        },
+        {
+            "name": "Gabor Toth",
+            "homepage": "https://github.com/gabor-toth",
+            "role": "Contributor"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://plugins.roundcube.net"
+        }
+    ],
+    "require": {
+        "roundcube/plugin-installer": ">=0.1.6"
+    },
+    "extra": {
+        "roundcube": {
+            "min-version": "1.3.0"
+        }
+    }
+}

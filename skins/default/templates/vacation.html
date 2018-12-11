@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title><roundcube:object name="pagetitle" /></title>
+    <meta charset="UTF-8" />
+    <roundcube:include file="/includes/links.html" />
+    <!--<script type="text/javascript" src="$skin_path/functions.js"></script>-->
+  </head>
+  <body>
+    <roundcube:include file="/includes/taskbar.html" />
+    <roundcube:include file="/includes/header.html" />
+    <div id="mainscreen" class="offset">
+      <roundcube:include file="/includes/settingstabs.html" />
+
+      <div id="pluginbody"  class="uibox contentbox">
+        <h1 class="boxtitle"><roundcube:object name="pagetitle" /></h1>
+        <div id="preferences-details" class="boxcontent">
+          <form name="vacationForm" action="./?_task=settings&amp;_action=plugin.vacationSave" method="post" class="propform">
+            <roundcube:object name="plugin.vacationForm" />
+            <roundcube:button command="plugin.vacationSave" type="input" class="button mainaction" label="Save" title="Save" /><br/>
+            <p>&nbsp;</p>
+          </form>
+        </div>
+      </div>
+
+      <roundcube:include file="/includes/footer.html" />
+    </div>
+  </body>
+</html>
