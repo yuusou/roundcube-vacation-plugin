@@ -5,6 +5,7 @@ Vacation / Out of Office plugin for Roundcube.
 
 About
 -----
+
 This is a rewrite of the Vacation plugin for Roundcube.
 It is currently not working as I haven't completed (re)writing it.
 
@@ -13,15 +14,15 @@ After this is done, I'll start by looking at the other drivers.
 
 More instructions will be available once the virtual driver and UI is working and completed.
 
-
 Todo
 ----
-Almost everything.
 
+Almost everything.
 
 Credits
 -------
+
 - The Postfixadmin team for creating the virtual vacation program.
 - Squirrelmail team for the setuid backend binary
 - Peter Ruiter for his initial work on the plugin.
-- Peter Ruiter for his initial work on the plugin.
+- Roman Plessl for his further work on the plugin.
