@@ -75,17 +75,17 @@ class Vacation extends rcube_plugin
         }
 
         // Initiate driver for current domain.
-        if (!$this->$_vacationInit . hasVacation()) {
+        if (!$this->$_vacationInit->hasVacation()) {
             return false;
         } else {
             try {
-                $this->$_driver = $this->$_vacationInit . getDriver();
+                $this->$_driver = $this->$_vacationInit->getDriver();
             } catch (Exception $e) {
                 $this->_raiseError($e->getMessage());
             }
         }
 
-        $this->_vacation = $this->_driver . getVacation();
+        $this->_vacation = $this->_driver->getVacation();
 
         $this->include_script("https://cdn.jsdelivr.net/npm/flatpickr@latest/dist/flatpickr.js");
         $this->include_script("https://cdn.jsdelivr.net/npm/flatpickr@latest/dist/plugins/rangePlugin.js");
@@ -127,11 +127,11 @@ class Vacation extends rcube_plugin
         $this->_vacation["active"] = ((null != rcube_utils::get_input_value("_vacationActive", rcube_utils::INPUT_POST)) ? "1" : "0");
 
         try {
-            $this->_driver . setVacation($this->_vacation);
-            $rcmail->output->show_message($this->gettext("success_changed"), "confirmation");
+            $this->_driver->setVacation($this->_vacation);
+            $rcmail->output->show_message($this->gettext("success_changed"));
         } catch (Exception $e) {
             //$rcmail->output->show_message($this->gettext("failed"), "error");
-            $rcmail->output->show_message($e . getMessage());
+            $rcmail->output->show_message($e->getMessage());
         }
 
         $this->vacationInit();
@@ -160,13 +160,15 @@ class Vacation extends rcube_plugin
         // return the complete edit form as table
 
         $out .= "<style>.uibox{overflow-y:scroll;}</style>";
-        $out .= "<fieldset><legend>" . $this->gettext("outofoffice") . " ::: " . $rcmail->user->data["username"] . "</legend>" . "\n";
+        $out .= "<fieldset><legend>" . $this->gettext("outofoffice") . " ::: " . $this->_username . "</legend>" . "\n";
         $out .= "<table class='propform'><tbody>";
         // show autoresponder properties
 
         // Auto-reply enabled
         $fieldId = "vacationActive";
-        $inputActive = new html_checkbox(["name" => "_vacationActive", "id" => $fieldId, "value" => 1]);
+        $inputActive = new html_checkbox(
+            ["name" => "_" . $fieldId, "id" => $fieldId, "value" => 1]
+        );
         $out .= sprintf(
             "<tr><td class=title'><label for='%s'>%s</label></td><td>%s</td></tr>\n",
             $fieldId,
@@ -176,7 +178,7 @@ class Vacation extends rcube_plugin
 
         // Subject
         $fieldId = "vacationSubject";
-        $inputSubject = new html_inputfield(["name" => "_vacationSubject", "id" => $fieldId, "size" => 90]);
+        $inputSubject = new html_inputfield(["name" => "_" . $fieldId, "id" => $fieldId, "size" => 90]);
         $out .= sprintf(
             "<tr><td class=title'><label for='%s'>%s</label></td><td>%s</td></tr>\n",
             $fieldId,
@@ -186,52 +188,58 @@ class Vacation extends rcube_plugin
 
         // Date active from
         $fieldId = "vacationActiveFrom";
-        $inputActiveFrom = new html_inputfield(["name" => "_vacationActiveFrom", "id" => $fieldId, "size" => 45]);
+        $inputActiveFrom = new html_inputfield(["name" => "_" . $fieldId, "id" => $fieldId, "size" => 45]);
         $out .= sprintf(
             "<tr><td class=title'><label for='%s'>%s</label></td><td>%s</td></tr>\n",
             $fieldId,
-            rcube_utils::rep_specialchars_output($this->gettext("activefrom")),
-            $inputActiveFrom->show($settings["activefrom"])
+            rcube_utils::rep_specialchars_output($this->gettext("activeFrom")),
+            $inputActiveFrom->show($settings["activeFrom"])
         );
 
         // Date active until
         $fieldId = "vacationActiveUntil";
-        $inputActiveUntil = new html_inputfield(["name" => "_vacationActiveUntil", "id" => $fieldId, "size" => 45]);
+        $inputActiveUntil = new html_inputfield(
+            ["name" => "_" . $fieldId, "id" => $fieldId, "size" => 45]
+        );
         $out .= sprintf(
             "<tr><td class=title'><label for='%s'>%s</label></td><td>%s</td></tr>\n",
             $fieldId,
-            rcube_utils::rep_specialchars_output($this->gettext("activeuntil")),
-            $inputActiveUntil->show($settings["activeuntil"])
+            rcube_utils::rep_specialchars_output($this->gettext("activeUntil")),
+            $inputActiveUntil->show($this->_vacation["activeUntil"])
         );
 
         // Out of office body
-        $fieldId = "vacation_body";
-        $input_autoresponderbody = new html_textarea(["name" => "_vacation_body", "id" => $fieldId, "cols" => 88, "rows" => 20]);
+        $fieldId = "vacationBody";
+        $inputBody = new html_textarea(
+            ["name" => "_" . $fieldId, "id" => $fieldId, "cols" => 88, "rows" => 20]
+        );
         $out .= sprintf(
             "<tr><td class=title'><label for='%s'>%s</label></td><td>%s</td></tr>\n",
             $fieldId,
-            rcube_utils::rep_specialchars_output($this->gettext("autoreplymessage")),
-            $input_autoresponderbody->show($settings["body"])
+            rcube_utils::rep_specialchars_output($this->gettext("body")),
+            $inputBody->show($this->_vacation["body"])
         );
 
         /* We only use aliases for .forward and only if it"s enabled in the config*/
         if ($this->v->useAliases()) {
-            $size = 0;
+            $size = 75;
 
             // If there are no multiple identities, hide the button and add increase the size of the textfield
             $hasMultipleIdentities = $this->v->vacation_aliases("buttoncheck");
-            (!$hasMultipleIdentities == "") ? : $size = 15;
+            (!$hasMultipleIdentities == "") ?: $size += 15;
 
-            $fieldId = "vacation_aliases";
-            $input_autoresponderalias = new html_inputfield(["name" => "_vacation_aliases", "id" => $fieldId, "size" => 75 + $size]);
+            $fieldId = "vacationAliases";
+            $inputAlias = new html_inputfield(
+                ["name" => "_" . $fieldId, "id" => $fieldId, "size" => $size]
+            );
             $out .= "<tr><td class=\"title\">" . $this->gettext("separate_alias") . "</td></tr>";
 
             // Inputfield with button
             $out .= sprintf(
                 "<tr><td class=title'><label for='%s'>%s</label></td><td>%s",
                 $fieldId,
-                rcube_utils::rep_specialchars_output($this->gettext("aliases")),
-                $input_autoresponderalias->show($settings["aliases"])
+                rcube_utils::rep_specialchars_output($this->gettext("alias")),
+                $inputAlias->show($this->_driver->getAlias())
             );
             if ($hasMultipleIdentities != "") {
                 $out .= sprintf(
@@ -253,7 +261,7 @@ class Vacation extends rcube_plugin
             $fieldId = "vacation_forward";
             $input_autoresponderforward = new html_inputfield(["name" => "_vacation_forward", "id" => $fieldId, "size" => 90]);
             $out .= sprintf(
-                "<tr><td class=\"title\"><label for=\"%s\">%s</label></td><td>%s<br/>%s</td></tr>\n",
+                "<tr><td class='title'><label for='%s'>%s</label></td><td>%s<br/>%s</td></tr>\n",
                 $fieldId,
                 rcube_utils::rep_specialchars_output($this->gettext("forwardingaddresses")),
                 $input_autoresponderforward->show($settings["forward"]),
