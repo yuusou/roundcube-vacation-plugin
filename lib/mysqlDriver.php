@@ -41,23 +41,23 @@ class Mysql extends Driver
      */
     protected function init()
     {
-        $this->_dsn = rcube_db::parse_dsn($this->_settings["dsn"]);
-        $this->_db = rcube_db::factory($this->_settings["dsn"], "", false);
+        $this->_dsn = rcube_db::parse_dsn($this->settings["dsn"]);
+        $this->_db = rcube_db::factory($this->settings["dsn"], "", false);
 
         $this->_db->db_connect("w");
         if ($this->error = $this->_db->is_error()) {
             throw new Exception($this->error);
         }
 
-        $this->_settings["goto"] = sprintf("%s@%s", preg_replace("/(@(?!.*@))/", "#", $this->_settings["email"]), $this->_settings["transportDomain"]);
+        $this->settings["goto"] = sprintf("%s@%s", preg_replace("/(@(?!.*@))/", "#", $this->settings["email"]), $this->settings["transportDomain"]);
 
-        if ($this->_settings["domainIdQuery"] !== "") {
-            $query = $this->_parse($this->_settings["domainIdQuery"]);
+        if ($this->settings["domainIdQuery"] !== "") {
+            $query = $this->_parse($this->settings["domainIdQuery"]);
             $result = $this->_db->query($query);
-            if ($row = $this->db->fetch_array($result)) {
-                $this->_settings["domainId"] = $row[0];
+            if ($row = $this->_db->fetch_array($result)) {
+                $this->settings["domainId"] = $row[0];
             } else {
-                $this->_settings["domainId"] = $this->_settings["domain"];
+                $this->settings["domainId"] = $this->settings["domain"];
             }
         }
     }
@@ -65,24 +65,24 @@ class Mysql extends Driver
     /**
      * Existing alias list.
      * 
-     * @return mixed false or string;
+     * @return string alias;
      */
     public function getAlias()
     {
         $alias = "";
 
-        $query = $this->_parse($this->_settings["selectQuery"]);
+        $query = $this->_parse($this->settings["selectQuery"]);
         $result = $this->_db->query($query);
-        if ($this->error = $this->db->is_error()) {
-            return false;
+        if ($this->error = $this->_db->is_error()) {
+            throw new Exception($this->error);
         }
 
-        if ($row = $this->db->fetch_assoc($result)) {
+        if ($row = $this->_db->fetch_assoc($result)) {
             $alias = $row[0];
 
             $alias = str_replace(" ", "", $alias);
-            $alias = substr($alias, strrpos(($this->_settings["goto"] . ","), "@") + 1);
-            $alias = substr($alias, strrpos(($this->_settings["email"] . ","), "@") + 1);
+            $alias = substr($alias, strrpos(($this->settings["goto"] . ","), "@") + 1);
+            $alias = substr($alias, strrpos(($this->settings["email"] . ","), "@") + 1);
         }
 
         return $alias;
@@ -91,7 +91,7 @@ class Mysql extends Driver
     /**
      * Existing vacation settings.
      * 
-     * @return mixed false or array;
+     * @return array vacation settings;
      */
     public function getVacation()
     {
@@ -104,15 +104,15 @@ class Mysql extends Driver
         ];
 
         $query = "SELECT subject, body, activefrom AS activeFrom, activeuntil AS activeUntil, active FROM vacation WHERE email=?";
-        $result = $this->db->query(
+        $result = $this->_db->query(
             $query,
-            $this->_settings["email"]
+            $this->settings["email"]
         );
-        if ($this->error = $this->db->is_error()) {
-            return false;
+        if ($this->error = $this->_db->is_error()) {
+            throw new Exception($this->error);
         }
 
-        if ($row = $this->db->fetch_assoc($result)) {
+        if ($row = $this->_db->fetch_assoc($result)) {
             $vacation = array_merge($vacation, $row);
             ($vacation["active"] !== "0") ?: $vacation["active"] = null;
         }
@@ -136,9 +136,9 @@ class Mysql extends Driver
             rcube_db::escape($vacation["body"]),
             rcube_db::escape($vacation["activeFrom"]),
             rcube_db::escape($vacation["activeUntil"]),
-            $this->_settings["domain"],
+            $this->settings["domain"],
             $vacation["active"],
-            $this->_settings["email"]
+            $this->settings["email"]
         );
         if ($this->error = $this->_db->is_error()) {
             throw new Exception($this->error);
@@ -148,12 +148,12 @@ class Mysql extends Driver
             $query = "INSERT INTO vacation VALUES (?, ?, ?, ?, ?, '', ?, 0, NOW(), NOW(), ?";
             $this->_db->query(
                 $query,
-                $this->_settings["email"],
+                $this->settings["email"],
                 rcube_db::escape($vacation["subject"]),
                 rcube_db::escape($vacation["body"]),
                 rcube_db::escape($vacation["activeFrom"]),
                 rcube_db::escape($vacation["activeUntil"]),
-                $this->_settings["domain"],
+                $this->settings["domain"],
                 $vacation["active"]
             );
             if ($this->error = $this->_db->is_error()) {
@@ -170,22 +170,22 @@ class Mysql extends Driver
          *      %e,forwards not possible (when not on vacation, forwards ignored).
          */
         if ($vacation["active"] === "0") {
-            $this->_settings["forward"] = $this->_settings["email"];
+            $this->settings["forward"] = $this->settings["email"];
         } else {
-            $forward = $this->_settings["goto"];
+            $forward = $this->settings["goto"];
 
-            if ($this->_settings["keepCopy"] === "1") {
-                $forward = sprintf("%s, %s", $forward, $this->_settings["email"]);
+            if ($this->settings["keepCopy"] === "1") {
+                $forward = sprintf("%s, %s", $forward, $this->settings["email"]);
             }
 
-            if ($this->_settings["forward"] !== "0") {
+            if ($this->settings["forward"] !== "0") {
                 $forward = sprintf("%s, %s", $forward, $vacation["forward"]);
             }
 
-            $this->_settings["forward"] = $forward;
+            $this->settings["forward"] = $forward;
         }
 
-        $query = $this->_parse($this->_settings["updateQuery"]);
+        $query = $this->_parse($this->settings["updateQuery"]);
         $this->_db->query($query);
         if ($this->error = $this->_db->is_error()) {
             throw new Exception($this->error);
@@ -205,11 +205,11 @@ class Mysql extends Driver
             ["%m", "%e", "%d", "%i", "%g", "%f"],
             [
                 $this->_dsn["database"],
-                $this->_settings["email"],
-                $this->_settings["domain"],
-                $this->_settings["domainId"],
-                $this->_settings["goto"],
-                $this->_settings["forward"]
+                $this->settings["email"],
+                $this->settings["domain"],
+                $this->settings["domainId"],
+                $this->settings["goto"],
+                $this->settings["forward"]
             ],
             $query
         );

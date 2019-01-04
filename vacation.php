@@ -16,6 +16,7 @@
  */
 
  // Load required dependencies
+require "lib/driver.php";
 require "lib/vacationInit.php";
 
 /**
@@ -56,7 +57,7 @@ class Vacation extends rcube_plugin
 
         $this->load_config();
         $this->add_texts("localization/");
-        $this->_username = $rcmail->user;
+        $this->_username = $rcmail->user->get_username();
 
         // Set email and domain.
         if (filter_var($this->_username, FILTER_VALIDATE_EMAIL)) {
@@ -69,23 +70,24 @@ class Vacation extends rcube_plugin
 
         // Initiate vacation.
         try {
-            $this->$_vacationInit = (new vacationInit($this->_email, $this->_domain));
+            $this->_vacationInit = (new vacationInit($this->_email, $this->_domain));
         } catch (Exception $e) {
             $this->_raiseError($e->getMessage());
         }
 
         // Initiate driver for current domain.
-        if (!$this->$_vacationInit->hasVacation()) {
+        if (!$this->_vacationInit->hasVacation()) {
             return false;
         } else {
             try {
-                $this->$_driver = $this->$_vacationInit->getDriver();
+                $this->_driver = $this->_vacationInit->getDriver();
             } catch (Exception $e) {
                 $this->_raiseError($e->getMessage());
             }
         }
 
         $this->_vacation = $this->_driver->getVacation();
+        
 
         $this->include_script("https://cdn.jsdelivr.net/npm/flatpickr@latest/dist/flatpickr.js");
         $this->include_script("https://cdn.jsdelivr.net/npm/flatpickr@latest/dist/plugins/rangePlugin.js");
@@ -284,6 +286,8 @@ class Vacation extends rcube_plugin
      */
     private function _raiseError($error)
     {
+        error_log($error);
+
         rcube::raise_error(
             [
                 "code" => 601,

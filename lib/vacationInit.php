@@ -33,7 +33,7 @@
 class VacationInit
 {
     private $_error = false;
-    private $_driver = "";
+    private $_driver;
     private $_settings = [];
     private $_sections = [];
 
@@ -115,8 +115,8 @@ class VacationInit
             return false;
         }
 
-        $this->_driver = $settings["driver"];
-        foreach ($this->_options[$this->_driver] as $key => $value) {
+        $driver = $settings["driver"];
+        foreach ($this->_options[$driver] as $key => $value) {
             if ($value == "required" && empty($settings[$key])) {
                 $this->_error = sprintf("%s missing in [%s].", $key, $section);
                 return false;
@@ -145,6 +145,7 @@ class VacationInit
      */
     public function getDriver()
     {
+        $driver = $this->_settings["driver"];
         $driverFile = sprintf("plugins/vacation/lib/%sDriver.php", $driver);
 
         if (!is_readable($driverFile)) {
@@ -152,9 +153,10 @@ class VacationInit
             return false;
         }
 
-        include $driverClass;
+        include $driverFile;
 
         try {
+            $driver = ucfirst($driver);
             $this->_driver = new $driver($this->_settings);
         } catch (Exception $e) {
             throw $e;
