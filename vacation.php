@@ -167,59 +167,59 @@ class Vacation extends rcube_plugin
         // show autoresponder properties
 
         // Auto-reply enabled
-        $fieldId = "vacationActive";
+        $fieldId = "active";
         $inputActive = new html_checkbox(
             ["name" => "_" . $fieldId, "id" => $fieldId, "value" => 1]
         );
         $out .= sprintf(
             "<tr><td class=title'><label for='%s'>%s</label></td><td>%s</td></tr>\n",
             $fieldId,
-            rcube_utils::rep_specialchars_output($this->gettext("active")),
-            $inputActive->show($this->_vacation["active"])
+            rcube_utils::rep_specialchars_output($this->gettext($fieldId)),
+            $inputActive->show($this->_vacation[$fieldId])
         );
 
         // Subject
-        $fieldId = "vacationSubject";
+        $fieldId = "subject";
         $inputSubject = new html_inputfield(["name" => "_" . $fieldId, "id" => $fieldId, "size" => 90]);
         $out .= sprintf(
             "<tr><td class=title'><label for='%s'>%s</label></td><td>%s</td></tr>\n",
             $fieldId,
-            rcube_utils::rep_specialchars_output($this->gettext("subject")),
-            $inputSubject->show($this->_vacation["subject"])
+            rcube_utils::rep_specialchars_output($this->gettext($fieldId)),
+            $inputSubject->show($this->_vacation[$fieldId])
         );
 
         // Date active from
-        $fieldId = "vacationActiveFrom";
+        $fieldId = "activeFrom";
         $inputActiveFrom = new html_inputfield(["name" => "_" . $fieldId, "id" => $fieldId, "size" => 45]);
         $out .= sprintf(
             "<tr><td class=title'><label for='%s'>%s</label></td><td>%s</td></tr>\n",
             $fieldId,
-            rcube_utils::rep_specialchars_output($this->gettext("activeFrom")),
-            $inputActiveFrom->show($settings["activeFrom"])
+            rcube_utils::rep_specialchars_output($this->gettext($fieldId)),
+            $inputActiveFrom->show($settings[$fieldId])
         );
 
         // Date active until
-        $fieldId = "vacationActiveUntil";
+        $fieldId = "activeUntil";
         $inputActiveUntil = new html_inputfield(
             ["name" => "_" . $fieldId, "id" => $fieldId, "size" => 45]
         );
         $out .= sprintf(
             "<tr><td class=title'><label for='%s'>%s</label></td><td>%s</td></tr>\n",
             $fieldId,
-            rcube_utils::rep_specialchars_output($this->gettext("activeUntil")),
-            $inputActiveUntil->show($this->_vacation["activeUntil"])
+            rcube_utils::rep_specialchars_output($this->gettext($fieldId)),
+            $inputActiveUntil->show($this->_vacation[$fieldId])
         );
 
         // Out of office body
-        $fieldId = "vacationBody";
+        $fieldId = "body";
         $inputBody = new html_textarea(
             ["name" => "_" . $fieldId, "id" => $fieldId, "cols" => 88, "rows" => 20]
         );
         $out .= sprintf(
             "<tr><td class=title'><label for='%s'>%s</label></td><td>%s</td></tr>\n",
             $fieldId,
-            rcube_utils::rep_specialchars_output($this->gettext("body")),
-            $inputBody->show($this->_vacation["body"])
+            rcube_utils::rep_specialchars_output($this->gettext($fieldId)),
+            $inputBody->show($this->_vacation[$fieldId])
         );
 
         /* We only use aliases for .forward and only if it"s enabled in the config*/

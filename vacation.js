@@ -3,7 +3,7 @@
 if (window.rcmail) {
 
 	// Updates aliases 
-  	rcmail.addEventListener('plugin.alias_callback', function(evt) {
+  	rcmail.addEventListener('plugin.aliasCallback', function(evt) {
 		$('#vacationAliases').val(evt.aliases);	
 	});
 
